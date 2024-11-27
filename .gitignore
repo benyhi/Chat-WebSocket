@@ -1,0 +1,30 @@
+# Node.js (Vite React)
+front/node_modules/
+front/dist/
+front/.env
+front/.vite/
+
+# Python (Flask)
+back/env/
+back/__pycache__/
+back/*.pyc
+back/.env
+
+# Archivos de configuración de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archivos de configuración de editor
+.vscode/
+.idea/
+
+# Otros archivos temporales
+*.swp
+*.swo
+
+# docker-compose.yml
+# docker-compose.override.yml
+
