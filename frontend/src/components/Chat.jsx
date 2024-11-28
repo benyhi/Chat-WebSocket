@@ -7,25 +7,31 @@ const socket = io("http://localhost:5000/chat");
 const Chat = () => {
   const [messages, setMessages] = useState([]); // Lista de mensajes
   const [inputMessage, setInputMessage] = useState(""); // Mensaje actual
+  const [isConnected, setIsConnected] = useState(false);
 
     // Escuchar mensajes entrantes
     useEffect(() => {
-        socket.on("message", (data) => {
-          setMessages((prevMessages) => [...prevMessages, data]);
-        });
-    
-        // Limpiar la conexión al desmontar el componente
-        // return () => {
-        //   socket.off("message");
-        // };
+
+      socket.on("connect", () => { setIsConnected(true) });
+
+      socket.on("message", (data) => {
+        console.log(data)
+        setMessages((messages) => [...messages, data]);
+      });
+
+      return () => {
+        socket.off("connect");
+        socket.off("message"); // Se elimina el listener "message" para evitar duplicados
+      };
+
     }, []);
 
   // Maneja el envío de mensajes
   const handleSendMessage = () => {
     if (inputMessage.trim() === "") return; // Evitar mensajes vacíos
-    const newMessage = { text: inputMessage, sender: "Tú"}
+    const newMessage = { text: inputMessage, sender: socket.id }
     socket.emit("message", newMessage)
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    // setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputMessage("");
   };
 
@@ -52,7 +58,7 @@ const Chat = () => {
     >
       {/* Header */}
       <Typography variant="h6" component="div" sx={{ padding: 2, textAlign: "center", backgroundColor: "#3f51b5", color: "white" }}>
-        Chat App
+        Chat App - { isConnected ? 'Online' : 'Offline'}
       </Typography>
 
       {/* Lista de mensajes */}

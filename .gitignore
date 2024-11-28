@@ -1,14 +1,16 @@
 # Node.js (Vite React)
-front/node_modules/
-front/dist/
-front/.env
-front/.vite/
+node_modules/
+dist/
+.env
+.vite/
 
 # Python (Flask)
-back/env/
-back/__pycache__/
-back/*.pyc
-back/.env
+env/
+__pycache__/
+*.pyc
+.env
+migrations/
+instance/
 
 # Archivos de configuración de sistema operativo
 .DS_Store
