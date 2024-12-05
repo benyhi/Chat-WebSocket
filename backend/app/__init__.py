@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -19,6 +20,7 @@ def create_app():
 
     # Inicializacion de objetos
     db.init_app(app)
+    CORS(app, resources={r"/*": {"origins": "http://localhost:*"}})
     socketio.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)

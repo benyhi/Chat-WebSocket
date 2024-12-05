@@ -23,11 +23,9 @@ def login():
     user = User.query.filter_by(username=username).first()
 
     if user and check_password_hash(user.password_hash, password):
-        access_token = create_access_token(
-            identity=username,
-        )
+        access_token = create_access_token(identity=username,)
 
-        return jsonify({'Token': access_token})
+        return jsonify({'Token': access_token, 'Username': username})
 
     return jsonify({'Mensaje':'El usuario o contraseña no coinciden.'})
 
