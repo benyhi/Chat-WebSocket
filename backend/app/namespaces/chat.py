@@ -1,22 +1,45 @@
-from flask_socketio import Namespace, emit, join_room, leave_room
-from flask import request
+from flask_socketio import Namespace, emit, join_room, leave_room, disconnect
+from flask import request, jsonify
+from flask_jwt_extended import decode_token
+from flask_jwt_extended.exceptions import NoAuthorizationError, FreshTokenRequired, RevokedTokenError, InvalidHeaderError
 
 class ChatNamespace(Namespace):
     def __init__(self, namespace=None):
         super().__init__(namespace)
-        self.users = {}
+        self.connected_users = {}
 
-    def on_connect(self):
-        if request.sid in self.users:
-            print(self.users)
-            user = self.users.get(request.sid)
-            emit('message', {'text': f'{user} se ha conectado', 'sender': 'Servidor'}, broadcast=True, include_self=False)
-            emit('message', {'text':'Bienvenido al chat!', 'sender':'Servidor'})
+    def on_connect(self, token):
+        token = request.args.get('token')
+
+        if not token:
+            print("No se recibio token, desconectando....")
+            disconnect()
+            return
+        
+        try:
+            decoded_token = decode_token(token)
+            username = decoded_token['sub']     # ""Convencion"" , 'sub' almacena el identificador del usuario
+            self.connected_users[request.sid] = username
+            print(f"{username} conectado con el SID {request.sid}")
+
+        #Manejo de errores de Tokens
+        except (NoAuthorizationError, InvalidHeaderError) as e:
+            # Si no se proporciona un token o el encabezado es inválido
+            return jsonify({"error": "No se proporcionó un token de acceso o el encabezado es inválido."}), 401
+        except FreshTokenRequired as e:
+            # Si el token ha expirado
+            return jsonify({"error": "El token ha expirado."}), 401
+        except RevokedTokenError as e:
+            # Si el token ha sido revocado
+            return jsonify({"error": "El token ha sido revocado."}), 401
+        except Exception as e:
+            # Para otros errores inesperados
+            return jsonify({"error": "Error desconocido.", "details": str(e)}), 500
+
 
     def on_disconnect(self):
-        user = self.users.get(request.sid)
-        emit('message', {'text': f'{user} se ha desconectado', 'sender': 'Servidor'})
-        self.users.pop(request.sid)
+        username = self.connected_users.pop(request.sid, None)
+        emit('message', {'text': f'{username} se ha desconectado', 'sender': 'Servidor'})
 
     def on_join(self, data):
         room = data.get('room')
@@ -31,10 +54,6 @@ class ChatNamespace(Namespace):
     def on_message(self, data):
         print(f'Mensaje recibido {data}')
         message = data.get('text')
-        sender = self.users.get(request.sid)
-        self.emit('message', {'text': message, 'sender':sender})
-
-    def on_set_username(self, username):
-        if username:    
-            self.users[request.sid] = username
-            print(f"Usuarios {username} conectado con el SID {request.sid}")
+        username = self.connected_users.get(request.sid)
+        print(username)
+        self.emit('message', {'text': message, 'sender':username})

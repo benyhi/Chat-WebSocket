@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Box, TextField, Button, Typography, Paper, List, ListItem, ListItemText } from "@mui/material";
 import {io} from "socket.io-client";
+import { getToken } from "../auth";
 
-const socket = io("http://localhost:5000/chat");
+const token = getToken()
+const socket = io("http://localhost:5000/chat", {
+    query: { token }, 
+    autoConnect: false,
+});
 
 const Chat = () => {
   const [messages, setMessages] = useState([]); // Lista de mensajes
@@ -11,20 +16,30 @@ const Chat = () => {
 
     // Escuchar mensajes entrantes
     useEffect(() => {
+      socket.connect();
 
-      socket.on("connect", () => { setIsConnected(true) });
+      socket.on("connect", () => {
+        console.log('Conectado al chat');
+        setIsConnected(true)
+      })
+
+      socket.on("disconnect", (reason) => {
+        console.log("Desconectado:", reason);
+        setIsConnected(false);
+      });
 
       socket.on("message", (data) => {
-        console.log(data)
+        console.log(data);
         setMessages((messages) => [...messages, data]);
       });
 
       return () => {
         socket.off("connect");
+        socket.off("disconnect");
         socket.off("message"); // Se elimina el listener "message" para evitar duplicados
       };
 
-    }, []);
+    }, [socket]);
 
   // Maneja el envío de mensajes
   const handleSendMessage = () => {

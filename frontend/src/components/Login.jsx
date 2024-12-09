@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Box,
@@ -8,9 +8,7 @@ import {
     Container,
     Alert,
 } from "@mui/material";
-import {io} from "socket.io-client";
-
-const socket = io("http://localhost:5000/chat");
+import { setToken } from './../auth'
 
 const Login = () => {
     const navigate = useNavigate()
@@ -55,15 +53,12 @@ const Login = () => {
 
             const data = await response.json();
 
-            localStorage.setItem('token', data.token);
+            setToken(data.Token);
             
             console.log('Login exitoso', data)
 
-            navigate("/");
-
-            socket.on('connect', () => {
-                socket.emit("set_username", loginData.username);
-            });
+            setSuccess("Inicio de sesion exitoso. Redirigiendo...")
+            setTimeout(() => navigate("/"), 2000);
 
         } catch (error){
             setError(error.message);
