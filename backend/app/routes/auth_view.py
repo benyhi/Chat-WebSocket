@@ -27,7 +27,7 @@ def login():
 
         return jsonify({'Token': access_token, 'Username': username})
 
-    return jsonify({'Mensaje':'El usuario o contraseña no coinciden.'})
+    return jsonify({'Mensaje':'El usuario o contraseña no coinciden.'}), 401
 
 @auth_bp.route('/register', methods=['POST'])
 def register_user():

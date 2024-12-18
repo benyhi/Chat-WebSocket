@@ -21,3 +21,13 @@ class Message(db.Model):
 
     sender_user = db.relationship('User', back_populates='sender', foreign_keys=[sender_id])
     receiver_user = db.relationship('User', back_populates='receiver', foreign_keys=[receiver_id])
+
+class Friendship(db.Model):
+    __tablename__ = 'friendship'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    accepted = db.Column(db.Boolean, default=False)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    friend = db.relationship('User', foreign_keys=[friend_id])

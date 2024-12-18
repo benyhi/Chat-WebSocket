@@ -22,6 +22,9 @@ class ChatNamespace(Namespace):
             self.connected_users[request.sid] = username
             print(f"{username} conectado con el SID {request.sid}")
 
+            self.emit('message', {'text': f'Bienvenido al chat {username}', 'sender': 'Servidor'})
+            self.emit('message', {'text': f'{username} se ha conectado al chat.', 'sender': 'Servidor'}, broadcast=True, include_self=False)
+
         #Manejo de errores de Tokens
         except (NoAuthorizationError, InvalidHeaderError) as e:
             # Si no se proporciona un token o el encabezado es inválido
@@ -36,21 +39,10 @@ class ChatNamespace(Namespace):
             # Para otros errores inesperados
             return jsonify({"error": "Error desconocido.", "details": str(e)}), 500
 
-
     def on_disconnect(self):
         username = self.connected_users.pop(request.sid, None)
         emit('message', {'text': f'{username} se ha desconectado', 'sender': 'Servidor'})
-
-    def on_join(self, data):
-        room = data.get('room')
-        join_room(room)
-        self.emit('message', {'text': 'Bienvenido a la sala de chat 1', 'sender':'Servidor'})
-
-    def on_leave(self, data):
-        room = data.get('room')
-        leave_room(room)
-        print('Desconectado de la sala de chat 1.')
-
+    
     def on_message(self, data):
         print(f'Mensaje recibido {data}')
         message = data.get('text')
